@@ -1,3 +1,6 @@
+%global with_doc 0
+%global with_check 0
+
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
@@ -5,7 +8,7 @@
 Summary: 	Bunch test organizer for Lettuce
 Name:	 	python-lettuce-bunch
 Version: 	0.2.0
-Release: 	1
+Release:        1%{?dist}
 Source0: 	%{name}-%{version}.tar.gz
 License: 	GNU GPL v3+
 Group: 		Development/Languages/Python
@@ -14,11 +17,15 @@ Prefix: 	%{_prefix}
 BuildArch: 	noarch
 Url: 		http://github.com/TODO
 BuildRequires:  python-setuptools
+
+%if 0%{?with_doc}
 BuildRequires:  python-sphinx
 BuildRequires:  python-lettuce > 0.1.34-b2167
 BuildRequires:  python-jinja2
 BuildRequires:  PyYAML
 BuildRequires:  python-nose
+%endif
+
 Requires: 	python-lettuce > 0.1.34-b2167
 Requires:       python-jinja2
 Requires:       PyYAML
@@ -42,39 +49,55 @@ Authors:
 %setup -q -n %{name}-%{version}
 
 %build
+%if 0%{?with_doc}
 cd docs
 make man
 cd ../
-
+%endif
 %{__python} setup.py build
 
+%if 0%{?with_check}
 %check
 make check
+%endif
 
 %install
+%if 0%{?with_doc}
 mkdir -p %{buildroot}/%{_mandir}/man1
 cp -p docs/_build/man/* %{buildroot}/%{_mandir}/man1
 ln -sf %{_mandir}/man1/lettuce_bunch.1.gz %{buildroot}/%{_mandir}/man1/bunch.1.gz
+%endif
 
-%{__python} setup.py install --prefix=%{_prefix} --root=%{buildroot} --single-version-externally-managed -O1  --record=INSTALLED_FILES
+%{__python} setup.py install --prefix=%{_prefix} --root=%{buildroot} --single-version-externally-managed -O1
 
 %clean
 rm -rf %{buildroot}
 
-%files -f INSTALLED_FILES
+%files
 %defattr(-,root,root)
+/usr/bin/*
+%{python_sitelib}/*
+
+%if 0%{?with_doc}
 %doc %{_mandir}/man1/bunch.1.gz
 %doc %{_mandir}/man1/lettuce_bunch.1.gz
+%endif
 
 %changelog
+* Tue Oct 16 2012 Alessio Ababilov <aababilov@griddynamics.com>
+- make it buildable: turn off doc and check
+
 * Tue Apr 17 2012 skosyrev@griddynamics.com
 - Increased version to 0.2.0
 - Added HTML reports and output plugin infrastructure
 - Some minor bugfixes
+
 * Thu Mar 1 2012 skosyrev@griddynamics.com
 - Renamed package to lettuce_bunch. Increased version to 0.1.0
+
 * Thu Feb 16 2012 skosyrev@griddynamics.com
 - Increased version to 0.0.2
 - Changed default fixture logic. Now they are executed along with test. Common dependency fixtures are executed before and after all tests
+
 * Fri Dec 16 2011 skosyrev@griddynamics.com
 - First package at version 0.0.1
