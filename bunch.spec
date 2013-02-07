@@ -1,6 +1,3 @@
-%global with_doc 0
-%global with_check 0
-
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
@@ -19,11 +16,7 @@ Url: 		http://github.com/TODO
 BuildRequires:  python-setuptools
 
 %if 0%{?with_doc}
-BuildRequires:  python-sphinx
-BuildRequires:  python-lettuce > 0.1.34-b2167
-BuildRequires:  python-jinja2
-BuildRequires:  PyYAML
-BuildRequires:  python-nose
+BuildRequires:  python-sphinx10
 %endif
 
 Requires: 	python-lettuce > 0.1.34-b2167
@@ -49,11 +42,6 @@ Authors:
 %setup -q -n %{name}-%{version}
 
 %build
-%if 0%{?with_doc}
-cd docs
-make man
-cd ../
-%endif
 %{__python} setup.py build
 
 %if 0%{?with_check}
@@ -63,6 +51,7 @@ make check
 
 %install
 %if 0%{?with_doc}
+make -C docs man PYTHONPATH=%{buildroot}%{python_sitelib} SPHINXBUILD=sphinx-1.0-build
 mkdir -p %{buildroot}/%{_mandir}/man1
 cp -p docs/_build/man/* %{buildroot}/%{_mandir}/man1
 ln -sf %{_mandir}/man1/lettuce_bunch.1.gz %{buildroot}/%{_mandir}/man1/bunch.1.gz
